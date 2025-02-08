@@ -64,27 +64,22 @@ if uploaded_files:
 
             # 初始化投票计数（如果该文件还没有投票数据）
             if file not in vote_count:
-                vote_count[file] = {"upvotes": 0, "downvotes": 0}
+                vote_count[file] = {"upvotes": 0}
 
-            # 赞同和反对按钮
+            # 赞同按钮
             upvote_button = st.button(f"👍 Upvote {image_number}", key=f"upvote_{file}")
-            downvote_button = st.button(f"👎 Downvote {image_number}", key=f"downvote_{file}")
 
             # 根据按钮点击更新投票计数
             if upvote_button:
                 vote_count[file]["upvotes"] += 1
                 st.success(f"✅ You upvoted {image_number}!")
-            
-            if downvote_button:
-                vote_count[file]["downvotes"] += 1
-                st.success(f"❌ You downvoted {image_number}!")
 
             # 显示投票结果
-            st.write(f"Upvotes: {vote_count[file]['upvotes']} | Downvotes: {vote_count[file]['downvotes']}")
+            st.write(f"Upvotes: {vote_count[file]['upvotes']}")
 
 # 显示所有投票结果
 st.subheader("📊 Voting Results")
 for file, votes in vote_count.items():
     # 对应的图片编号
     image_number = f"Image {uploaded_files.index(file) + 1}"
-    st.write(f"{image_number} - Upvotes: {votes['upvotes']} | Downvotes: {votes['downvotes']}")
+    st.write(f"{image_number} - Upvotes: {votes['upvotes']}")
