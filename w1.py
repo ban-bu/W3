@@ -11,16 +11,20 @@ if not os.path.exists(UPLOAD_FOLDER):
 # Streamlit 标题
 st.title("📷 Upload your images and vote anonymously!")
 
+# 使用 st.session_state 保存投票计数和已上传的图片列表
+if 'vote_count' not in st.session_state:
+    st.session_state.vote_count = {}
+
+if 'uploaded_images' not in st.session_state:
+    st.session_state.uploaded_images = []
+
 # 用户输入文件名称
 file_name = st.text_input("Enter a name for the image (optional):")
 
 # 上传文件
 uploaded_file = st.file_uploader("Choose the image", type=["jpg", "jpeg", "png"])
 
-# 使用 st.session_state 保存投票计数
-if 'vote_count' not in st.session_state:
-    st.session_state.vote_count = {}
-
+# 上传文件并保存
 if uploaded_file is not None:
     # 如果用户没有输入文件名，则使用上传文件的原始名称
     if not file_name:
@@ -37,11 +41,13 @@ if uploaded_file is not None:
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
+    # 将上传的文件记录到 session_state 中
+    st.session_state.uploaded_images.append(encoded_name)
     st.success(f"✅ {encoded_name} uploaded successfully!")
 
 # **实时** 显示所有上传的图片（6列布局）
 st.subheader("📸 Uploaded Images")
-uploaded_files = sorted(os.listdir(UPLOAD_FOLDER), reverse=True)  # 按时间倒序排列
+uploaded_files = sorted(st.session_state.uploaded_images, reverse=True)  # 按时间倒序排列
 
 if uploaded_files:
     # 创建6个列的布局，并存入列表
