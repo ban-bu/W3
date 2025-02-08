@@ -68,19 +68,17 @@ if uploaded_files:
 
             # 赞同和反对按钮
             upvote_button = st.button(f"👍 Upvote {image_number}", key=f"upvote_{file}")
-            downvote_button = st.button(f"👎 Downvote {image_number}", key=f"downvote_{file}")
+            
 
             # 根据按钮点击更新投票计数
             if upvote_button:
                 vote_count[file]["upvotes"] += 1
                 st.success(f"✅ You upvoted {image_number}!")
             
-            if downvote_button:
-                vote_count[file]["downvotes"] += 1
-                st.success(f"❌ You downvoted {image_number}!")
+
 
             # 显示投票结果
-            st.write(f"Upvotes: {vote_count[file]['upvotes']} | Downvotes: {vote_count[file]['downvotes']}")
+            st.write(f"Upvotes: {vote_count[file]['upvotes']}}")
 
 # 显示所有投票结果
 st.subheader("📊 Voting Results")
