@@ -39,6 +39,15 @@ st.title("📷 Upload your images and vote!")
 if 'voted_images' not in st.session_state:
     st.session_state.voted_images = set()
 
+# 清空所有数据的按钮
+if st.button("Clear All Images and Votes"):
+    global_data['uploaded_images'] = []
+    global_data['vote_count'] = defaultdict(int)
+    save_metadata(global_data['uploaded_images'])
+    st.session_state.voted_images = set()  # 清空投票记录
+    st.success("All images and votes have been cleared!")
+    st.experimental_rerun()  # 清空后重新运行页面
+
 # 文件上传组件
 with st.form("upload_form"):
     file_name = st.text_input("Image display name (optional):")
