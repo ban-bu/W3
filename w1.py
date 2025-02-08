@@ -17,6 +17,9 @@ file_name = st.text_input("Enter a name for the image (optional):")
 # 上传文件
 uploaded_file = st.file_uploader("Choose the image", type=["jpg", "jpeg", "png"])
 
+# 初始化投票计数字典
+vote_count = {}
+
 if uploaded_file is not None:
     # 如果用户没有输入文件名，则使用上传文件的原始名称
     if not file_name:
@@ -43,9 +46,6 @@ if uploaded_files:
     # 创建6个列的布局，并存入列表
     cols = st.columns(6)
 
-    # 定义一个字典，用于存储投票计数
-    vote_count = {}
-
     for i, file in enumerate(uploaded_files):
         img_path = os.path.join(UPLOAD_FOLDER, file)
         try:
@@ -59,7 +59,7 @@ if uploaded_files:
         with col:
             st.image(img, caption=f"Image ID: {file}", use_container_width=True)
 
-            # 投票按钮
+            # 初始化投票计数（如果该文件还没有投票数据）
             if file not in vote_count:
                 vote_count[file] = {"upvotes": 0, "downvotes": 0}
 
