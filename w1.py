@@ -77,14 +77,14 @@ for idx, item in enumerate(reversed(global_data['uploaded_images'])):
             # 显示名称和投票数
             st.markdown(f"**{item['display_name']}**")
             st.caption(f"Votes: {global_data['vote_count'][item['filename']]}")
-            
+
             # 投票按钮
             if item['filename'] not in st.session_state.voted_images:
                 if st.button("👍 Vote", key=f"vote_{item['filename']}"):
                     global_data['vote_count'][item['filename']] += 1
                     st.session_state.voted_images.add(item['filename'])
                     save_metadata(global_data['uploaded_images'])
-                    st.experimental_rerun()
+                    st.rerun()  # 使用新的 rerun 方法
             else:
                 st.warning("You've already voted for this")
                 
