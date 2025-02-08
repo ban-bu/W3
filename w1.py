@@ -54,27 +54,30 @@ if uploaded_files:
             st.error(f"无法加载 {file}: {e}")
             continue
 
+        # 为每张图片生成一个唯一编号
+        image_number = f"Image {i+1}"
+
         # 通过取模运算选择对应的列展示图片
         col = cols[i % 6]
         with col:
-            st.image(img, caption=f"Image ID: {file}", use_container_width=True)
+            st.image(img, caption=image_number, use_container_width=True)
 
             # 初始化投票计数（如果该文件还没有投票数据）
             if file not in vote_count:
                 vote_count[file] = {"upvotes": 0, "downvotes": 0}
 
             # 赞同和反对按钮
-            upvote_button = st.button(f"👍 Upvote {file}", key=f"upvote_{file}")
-            downvote_button = st.button(f"👎 Downvote {file}", key=f"downvote_{file}")
+            upvote_button = st.button(f"👍 Upvote {image_number}", key=f"upvote_{file}")
+            downvote_button = st.button(f"👎 Downvote {image_number}", key=f"downvote_{file}")
 
             # 根据按钮点击更新投票计数
             if upvote_button:
                 vote_count[file]["upvotes"] += 1
-                st.success(f"✅ You upvoted {file}!")
+                st.success(f"✅ You upvoted {image_number}!")
             
             if downvote_button:
                 vote_count[file]["downvotes"] += 1
-                st.success(f"❌ You downvoted {file}!")
+                st.success(f"❌ You downvoted {image_number}!")
 
             # 显示投票结果
             st.write(f"Upvotes: {vote_count[file]['upvotes']} | Downvotes: {vote_count[file]['downvotes']}")
@@ -82,4 +85,6 @@ if uploaded_files:
 # 显示所有投票结果
 st.subheader("📊 Voting Results")
 for file, votes in vote_count.items():
-    st.write(f"Image ID: {file} - Upvotes: {votes['upvotes']} | Downvotes: {votes['downvotes']}")
+    # 对应的图片编号
+    image_number = f"Image {uploaded_files.index(file) + 1}"
+    st.write(f"{image_number} - Upvotes: {votes['upvotes']} | Downvotes: {votes['downvotes']}")
