@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 import os
-import uuid  # 用于生成唯一的匿名编码
+import uuid
 
 # 确保 "uploads" 目录存在
 UPLOAD_FOLDER = "uploads"
@@ -73,13 +73,19 @@ if uploaded_files:
             if file not in st.session_state.vote_count:
                 st.session_state.vote_count[file] = {"upvotes": 0}
 
-            # 赞同按钮
-            upvote_button = st.button(f"👍 Upvote {image_number}", key=f"upvote_{file}")
+            # 初始化投票状态（防止重复投票）
+            if 'voted_images' not in st.session_state:
+                st.session_state.voted_images = set()
 
-            # 根据按钮点击更新投票计数
-            if upvote_button:
-                st.session_state.vote_count[file]["upvotes"] += 1
-                st.success(f"✅ You upvoted {image_number}!")
+            # 赞同按钮
+            if file not in st.session_state.voted_images:
+                upvote_button = st.button(f"👍 Upvote {image_number}", key=f"upvote_{file}")
+                if upvote_button:
+                    st.session_state.vote_count[file]["upvotes"] += 1
+                    st.session_state.voted_images.add(file)
+                    st.success(f"✅ You upvoted {image_number}!")
+            else:
+                st.warning(f"❌ You have already voted for {image_number}.")
 
             # 显示投票结果
             st.write(f"Upvotes: {st.session_state.vote_count[file]['upvotes']}")
