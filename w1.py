@@ -17,8 +17,9 @@ file_name = st.text_input("Enter a name for the image (optional):")
 # 上传文件
 uploaded_file = st.file_uploader("Choose the image", type=["jpg", "jpeg", "png"])
 
-# 初始化投票计数字典
-vote_count = {}
+# 使用 st.session_state 保存投票计数
+if 'vote_count' not in st.session_state:
+    st.session_state.vote_count = {}
 
 if uploaded_file is not None:
     # 如果用户没有输入文件名，则使用上传文件的原始名称
@@ -63,23 +64,23 @@ if uploaded_files:
             st.image(img, caption=image_number, use_container_width=True)
 
             # 初始化投票计数（如果该文件还没有投票数据）
-            if file not in vote_count:
-                vote_count[file] = {"upvotes": 0}
+            if file not in st.session_state.vote_count:
+                st.session_state.vote_count[file] = {"upvotes": 0}
 
             # 赞同按钮
             upvote_button = st.button(f"👍 Upvote {image_number}", key=f"upvote_{file}")
 
             # 根据按钮点击更新投票计数
             if upvote_button:
-                vote_count[file]["upvotes"] += 1
+                st.session_state.vote_count[file]["upvotes"] += 1
                 st.success(f"✅ You upvoted {image_number}!")
 
             # 显示投票结果
-            st.write(f"Upvotes: {vote_count[file]['upvotes']}")
+            st.write(f"Upvotes: {st.session_state.vote_count[file]['upvotes']}")
 
 # 显示所有投票结果
 st.subheader("📊 Voting Results")
-for file, votes in vote_count.items():
+for file, votes in st.session_state.vote_count.items():
     # 对应的图片编号
     image_number = f"Image {uploaded_files.index(file) + 1}"
     st.write(f"{image_number} - Upvotes: {votes['upvotes']}")
