@@ -47,7 +47,7 @@ with st.form("upload_form"):
         if uploaded_file:
             # 生成唯一文件名
             unique_id = f"image_{uuid.uuid4()}"
-            display_name = file_name or uploaded_file.name.split('.')[0]
+            display_name = file_name or f"Image {len(global_data['uploaded_images']) + 1}"  # 自动编号
             
             # 保存图片文件
             with open(os.path.join(UPLOAD_FOLDER, unique_id), "wb") as f:
