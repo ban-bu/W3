@@ -18,6 +18,9 @@ if 'vote_count' not in st.session_state:
 if 'uploaded_images' not in st.session_state:
     st.session_state.uploaded_images = []
 
+if 'voted_images' not in st.session_state:
+    st.session_state.voted_images = set()
+
 # 用户输入文件名称
 file_name = st.text_input("Enter a name for the image (optional):")
 
@@ -73,11 +76,7 @@ if uploaded_files:
             if file not in st.session_state.vote_count:
                 st.session_state.vote_count[file] = {"upvotes": 0}
 
-            # 初始化投票状态（防止重复投票）
-            if 'voted_images' not in st.session_state:
-                st.session_state.voted_images = set()
-
-            # 赞同按钮
+            # 赞同按钮（仅当未投票时可见）
             if file not in st.session_state.voted_images:
                 upvote_button = st.button(f"👍 Upvote {image_number}", key=f"upvote_{file}")
                 if upvote_button:
