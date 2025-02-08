@@ -33,7 +33,7 @@ def save_metadata(metadata):
 global_data = load_global_data()
 
 # Streamlit 应用界面
-st.title("📷 Upload your images and vote anonymously!")
+st.title("📷 Upload your images and vote!")
 
 # 用户会话状态管理
 if 'voted_images' not in st.session_state:
@@ -65,7 +65,7 @@ with st.form("upload_form"):
             st.success("Image uploaded successfully!")
 
 # 图片展示和投票功能
-st.subheader("📸 Gallery")
+st.subheader("📸 Uploaded Images")
 cols = st.columns(6)
 for idx, item in enumerate(reversed(global_data['uploaded_images'])):
     col = cols[idx % 6]
