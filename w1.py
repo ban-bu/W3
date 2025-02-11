@@ -51,7 +51,7 @@ if st.button("Clear All Images and Votes"):
 # 文件上传组件
 with st.form("upload_form"):
     file_name = st.text_input("Image display name (optional):")
-    uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png","wbep"])
+    uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png","webp"])
     if st.form_submit_button("Upload Image"):
         if uploaded_file:
             # 生成唯一文件名
