@@ -1,67 +1,92 @@
 import streamlit as st
+import pandas as pd
+import os
+import json
 import random
+import datetime
 
-st.set_page_config(page_title="天黑请闭眼：HR 教学版", layout="centered")
+EMPLOYEES_FILE = "employees.csv"
+MESSAGES_FILE = "messages.json"
 
-st.title("天黑请闭眼：Night Falls, Time to Leave")
-st.markdown("本系统模拟H&M店铺中的员工KPI状况，请主持人引导找出破坏团队的“杀手”。")
+# 加载员工数据
+if "employees_df" not in st.session_state:
+    if os.path.exists(EMPLOYEES_FILE):
+        st.session_state.employees_df = pd.read_csv(EMPLOYEES_FILE, index_col=0)
+    else:
+        st.session_state.employees_df = None
 
-# 初始化状态
-if "players" not in st.session_state:
-    st.session_state.players = {}
-if "player_count" not in st.session_state:
-    st.session_state.player_count = 0
-if "roles_assigned" not in st.session_state:
-    st.session_state.roles_assigned = False
+# 加载消息数据（兼容旧格式）
+if "messages" not in st.session_state:
+    if os.path.exists(MESSAGES_FILE):
+        with open(MESSAGES_FILE, "r", encoding="utf-8") as f:
+            try:
+                data = json.load(f)
+                # 如果数据是旧格式（仅字符串），转换为字典格式，时间字段为空
+                if isinstance(data, list) and all(isinstance(item, str) for item in data):
+                    st.session_state.messages = [{"time": "", "message": msg} for msg in data]
+                else:
+                    st.session_state.messages = data
+            except Exception:
+                st.session_state.messages = []
+    else:
+        st.session_state.messages = []
 
-# 步骤 1：设置玩家人数
-player_count = st.number_input("请输入参与学生人数（建议 6-20 人）", min_value=4, max_value=30, value=8)
-if st.button("确认人数"):
-    st.session_state.player_count = player_count
-    st.session_state.players = {
-        f"{i+1:03d}": {
-            "KPI": random.randint(60, 100),
-            "status": "在岗",
-            "role": "未分配"
-        }
-        for i in range(player_count)
-    }
-    st.session_state.roles_assigned = False
-    st.success(f"已创建 {player_count} 名员工，请继续分配角色。")
+st.title("Work Overview")
 
-# 步骤 2：分配角色
-if st.button("分配角色"):
-    n = st.session_state.player_count
-    roles_pool = ["杀手", "侦探", "医生"] + ["平民"] * (n - 3)
-    random.shuffle(roles_pool)
-    for i, pid in enumerate(st.session_state.players):
-        st.session_state.players[pid]["role"] = roles_pool[i]
-    st.session_state.roles_assigned = True
-    st.success("角色分配完成，主持人可选择查看。")
+# 侧边栏：生成员工数据
+st.sidebar.header("Settings")
+num_employees = st.sidebar.number_input("Number of employees", min_value=1, max_value=999, value=5, step=1)
+if st.sidebar.button("Generate Employees"):
+    employees = []
+    for i in range(num_employees):
+        employees.append({
+            "Employee #": f"{i+1:03d}",
+            "Hours Worked": 0,
+            "Bonus (HKD)": 0,
+            "Night Shifts": 0
+        })
+    st.session_state.employees_df = pd.DataFrame(employees)
+    st.session_state.employees_df.to_csv(EMPLOYEES_FILE)
+    st.success("Employees generated successfully!")
 
-# 步骤 3：公屏展示
-st.subheader("【 公屏信息 - 员工KPI 状态看板 】")
-for pid, info in st.session_state.players.items():
-    st.markdown(f"- 员工 {pid} | KPI：{info['KPI']} | 当前状态：**{info['status']}**")
+if st.session_state.employees_df is not None:
+    st.subheader("Update Employee Data")
+    employee_list = st.session_state.employees_df["Employee #"].tolist()
+    selected_employee = st.selectbox("Select an employee to update", employee_list)
+    field_options = ["Hours Worked", "Bonus (HKD)", "Night Shifts"]
+    selected_field = st.selectbox("Select a field to update", field_options)
+    new_value = st.number_input("New value", value=0, step=1)
 
-# 步骤 4：主持人查看所有身份
-if st.checkbox("（仅主持人）点击查看全部身份"):
-    st.subheader("【主持人信息】角色一览")
-    for pid, info in st.session_state.players.items():
-        st.markdown(f"- 员工 {pid} | 角色：**{info['role']}**")
+    if st.button("Update Data"):
+        idx = st.session_state.employees_df[
+            st.session_state.employees_df["Employee #"] == selected_employee
+        ].index[0]
+        st.session_state.employees_df.at[idx, selected_field] = new_value
+        st.session_state.employees_df.to_csv(EMPLOYEES_FILE)
+        st.success(f"Employee {selected_employee} - {selected_field} updated to {new_value}!")
 
-# 步骤 5：主持人可更新状态（如被杀/被救）
-st.subheader("【主持人操作面板】")
-with st.form("update_form"):
-    target_id = st.text_input("请输入员工编号（例如：005）")
-    new_status = st.selectbox("选择新状态", ["在岗", "已淘汰", "被救", "弃权"])
-    submitted = st.form_submit_button("更新该员工状态")
-    if submitted:
-        if target_id in st.session_state.players:
-            st.session_state.players[target_id]["status"] = new_status
-            st.success(f"员工 {target_id} 状态已更新为：{new_status}")
-        else:
-            st.warning("员工编号不存在，请检查输入。")
+    st.subheader("Employee Table")
+    st.table(st.session_state.employees_df)
 
-st.markdown("---")
-st.caption("Designed for Talent Management class - Powered by Streamlit")
+# 信息发送部分（带时间戳）
+st.subheader("Send Messages")
+with st.form(key="message_form", clear_on_submit=True):
+    message = st.text_input("Enter a message")
+    submitted = st.form_submit_button("Send")
+    if submitted and message:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        st.session_state.messages.append({"time": timestamp, "message": message})
+        with open(MESSAGES_FILE, "w", encoding="utf-8") as f:
+            json.dump(st.session_state.messages, f, ensure_ascii=False, indent=2)
+        st.success("Message sent!")
+
+# 显示消息记录和清空按钮
+st.subheader("Message Log")
+if st.session_state.messages:
+    if st.button("Clear Messages"):
+        st.session_state.messages = []
+        with open(MESSAGES_FILE, "w", encoding="utf-8") as f:
+            json.dump(st.session_state.messages, f, ensure_ascii=False, indent=2)
+        st.success("Messages cleared!")
+    for msg in st.session_state.messages:
+        st.write(f"{msg['time']}: {msg['message']}")
